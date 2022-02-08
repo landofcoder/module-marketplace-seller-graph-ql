@@ -42,8 +42,19 @@ type Query {
 
 type Mutation {
 
-    registerSeller(input: SellerInput!): Res @resolver(class: "\\Lof\\SellerGraphQl\\Model\\Resolver\\CreateSeller") @doc(description: "Register a new Seller Account, create new seller account")
+    registerSeller(input: SellerMutationInput!): Res @resolver(class: "\\Lof\\SellerGraphQl\\Model\\Resolver\\CreateSeller") @doc(description: "Register a new Seller Account, create new seller account")
 
+    becomeSeller (
+        input: BecomeSellerMutationInput @doc(description: "Query by BecomeSellerMutationInput.")
+    ) : SellerOuput @resolver( class: "Lof\\SellerGraphQl\\Model\\Resolver\\BecomeSeller") @doc(description: "Query by Mutation Become Seller.")
+
+    sellerUpdateProfile (
+        input: SellerProfileMutationInput @doc(description: "Query by SellerProfileMutationInput.")
+    ) : SellerOuput @resolver( class: "Lof\\SellerGraphQl\\Model\\Resolver\\SellerUpdateProfile") @doc(description: "Query by Mutation Seller submit change his profile.")
+}
+
+type Customer {
+    seller: Seller @resolver( class: "Lof\\SellerGraphQl\\Model\\Resolver\\Seller") @doc(description: "Query seller profile of current logged in customer account.")
 }
 
 type SellerRate {
