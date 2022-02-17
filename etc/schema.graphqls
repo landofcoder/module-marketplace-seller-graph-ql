@@ -16,10 +16,6 @@
 # @copyright   Copyright (c) 2022 Landofcoder (https://landofcoder.com/)
 # @license     https://landofcoder.com/LICENSE.txt
 
-enum UrlRewriteEntityTypeEnum {
-    LOF_MARKETPLACE
-}
-
 type Query {
     seller(
         seller_id: Int! @doc(description: "Seller id")
@@ -42,11 +38,11 @@ type Query {
 
 type Mutation {
 
-    registerSeller(input: SellerMutationInput!): Res @resolver(class: "\\Lof\\SellerGraphQl\\Model\\Resolver\\CreateSeller") @doc(description: "Register a new Seller Account, create new seller account")
+    registerSeller(input: SellerMutationInput!): RegisterSellerOuput @resolver(class: "\\Lof\\SellerGraphQl\\Model\\Resolver\\CreateSeller") @doc(description: "Register a new Seller Account, create new seller account")
 
     becomeSeller (
-        input: BecomeSellerMutationInput @doc(description: "Query by BecomeSellerMutationInput.")
-    ) : SellerOuput @resolver( class: "Lof\\SellerGraphQl\\Model\\Resolver\\BecomeSeller") @doc(description: "Query by Mutation Become Seller.")
+        input: SellerInput @doc(description: "Query by BecomeSellerMutationInput.")
+    ) : RegisterSellerOuput @resolver( class: "Lof\\SellerGraphQl\\Model\\Resolver\\BecomeSeller") @doc(description: "Query by Mutation Become Seller.")
 
     sellerUpdateProfile (
         input: SellerProfileMutationInput @doc(description: "Query by SellerProfileMutationInput.")
@@ -55,22 +51,6 @@ type Mutation {
 
 type Customer {
     seller: Seller @resolver( class: "Lof\\SellerGraphQl\\Model\\Resolver\\Seller") @doc(description: "Query seller profile of current logged in customer account.")
-}
-
-type SellerRate {
-    rating_id: Int @doc(description: "Rating ID")
-    seller_id: Int @doc(description: "Seller ID")
-    customer_id: Int @doc(description: "Customer ID")
-    rate1: Int @doc(description: "Rate 1")
-    rate2: Int @doc(description: "Rate 2")
-    rate3: Int @doc(description: "Rate 3")
-    rating: Int @doc(description: "Total Rate")
-    email: String @doc(description: "Email")
-    title: String @doc(description: "Title")
-    status: String @doc(description: "Status")
-    detail: String @doc(description: "Detail")
-    nickname: String @doc(description: "Nick Name")
-    created_at: String @doc(description: "Created At")
 }
 
 type Seller {
@@ -128,21 +108,12 @@ type Seller {
     seller_rates: SellerRates @doc(description: "Seller Rates")
     products: Products @doc(description: "Products")
 }
+
 type Sellers {
     total_count: Int @doc(description: "The number of sellers returned")
     items: [Seller] @doc(description: "An array of sellers that match the specified search criteria")
     page_info: SearchResultPageInfo @doc(description: "An object that includes the page_info and currentPage values specified in the query.")
     sort_fields: SortFields @doc(description: "An object that includes the default sort field and all available sort fields.") @resolver(class: "Lof\\SellerGraphQl\\Model\\Resolver\\Sellers\\SortFields")
-}
-
-type Products {
-    total_count: Int @doc(description: "The number of seller products returned")
-    items: [ProductInterface] @doc(description: "An array of seller products that match the specified search criteria")
-}
-
-type SellerRates {
-    total_count: Int @doc(description: "The number of seller rates returned")
-    items: [SellerRate] @doc(description: "An array of seller rates")
 }
 
 input SellerSortInput @doc(description: "SellerSortInput specifies the attribute to use for sorting search results and indicates whether the results are sorted in ascending or descending order. It's possible to sort sellers using searchable attributes with enabled 'Use in Filter Options' option")
@@ -195,26 +166,6 @@ input SellerGroupFilterInput {
     or: SellerGroupFilterInput @doc(description: "The keyword required to perform a logical OR comparison")
 }
 
-input SellerProductFilterInput {
-    name: FilterTypeInput @doc(description: "Name")
-    type_id: FilterTypeInput @doc(description: "Type")
-    price: FilterTypeInput @doc(description: "Price")
-    created_at: FilterTypeInput @doc(description: "Created At")
-    approval: FilterTypeInput @doc(description: "Approval")
-    sku: FilterTypeInput @doc(description: "SKU")
-    or: SellerFilterInput @doc(description: "The keyword required to perform a logical OR comparison")
-}
-type SellerProducts {
-    total_count: Int @doc(description: "The number of seller products returned")
-    items: [SellerProduct] @doc(description: "An array of seller products")
-}
-
-type SellerProduct {
-    product_id: Int @doc(description: "Product Id")
-    product_name: String @doc(description: "Product Name")
-    status: Int @doc(description: "Status")
-    store_id: Int @doc(description: "Store Id")
-}
 
 type SellerGroup {
     group_id: Int @doc(description: "Group Id")
@@ -235,65 +186,19 @@ type SellerGroups {
     sort_fields: SortFields @doc(description: "An object that includes the default sort field and all available sort fields.") @resolver(class: "Lof\\SellerGraphQl\\Model\\Resolver\\Sellers\\SortFields")
 }
 
-type Res {
+type RegisterSellerOuput {
     code: String
     message: String
 }
 
-interface ProductInterface {
-    seller: Seller @doc(description: "Seller who sell this product") @resolver(class: "\\Lof\\SellerGraphQl\\Model\\Resolver\\ProductAttributeSetSellerResolver")
-}
-
-input SellerCustomerInput {
+input SellerMutationInput {
     seller: SellerInput!
     customer: CustomerDataInput!
     password: String!
-    or: SellerCustomerInput
 }
 
 input SellerInput {
-    group_id  : String!
-    url_key  : String!
-}
-
-input ReviewInput {
-    seller_id  : String!
-    rate1  : Int!
-    rate2  : Int!
-    rate3  : Int!
-    nickname  : String!
-    email  : String!
-    title  : String!
-    detail  : String!
-}
-
-input CustomerDataInput {
-    firstname: String!
-    lastname: String!
-    email: String!
-    address: AddressInput
-}
-
-input AddressInput {
-    region_id: String
-    country_id: String!
-    city: String!
-    street: String!
-    company: String
-    telephone: String!
-    postcode: String!
-    or: AddressInput
-}
-
-input SellerCustomerInput {
-    seller: SellerInput!
-    customer: CustomerDataInput!
-    password: String!
-    or: SellerCustomerInput
-}
-
-input SellerInput {
-    group_id  : String!
+    group_id  : String
     url_key  : String!
 }
 
@@ -313,18 +218,4 @@ input AddressInput {
     telephone: String!
     postcode: String!
     or: AddressInput
-}
-
-input CustomerMessageInput {
-    seller_id  : String!
-    content  : String!
-}
-
-type SortField {
-    value: String @doc(description: "Attribute code of sort field.")
-    label: String @doc(description: "Label of sort field.")
-}
-type SortFields @doc(description: "SortFields contains a default value for sort fields and all available sort fields.") {
-    default: String @doc(description: "Default value of sort fields.")
-    options: [SortField] @doc(description: "Available sort fields.")
 }
