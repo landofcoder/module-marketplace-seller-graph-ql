@@ -16,10 +16,14 @@
 # @copyright   Copyright (c) 2022 Landofcoder (https://landofcoder.com/)
 # @license     https://landofcoder.com/LICENSE.txt
 
+enum UrlRewriteEntityTypeEnum {
+    LOF_MARKETPLACE
+}
+
 type Query {
     seller(
-        seller_id: Int! @doc(description: "Seller id")
-    ): Seller @resolver(class: "\\Lof\\SellerGraphQl\\Model\\Resolver\\SellerById") @doc(description: "Get Seller by ID") @cache( cacheIdentity: "Lof\\SellerGraphQl\\Model\\Resolver\\SellerById\\Identity")
+        sellerUrl: String! @doc(description: "Seller Url Key")
+    ): Seller @resolver(class: "\\Lof\\SellerGraphQl\\Model\\Resolver\\SellerById") @doc(description: "Get Seller by Url Key") @cache( cacheIdentity: "Lof\\SellerGraphQl\\Model\\Resolver\\SellerById\\Identity")
 
     sellers(
        filter: SellerFilterInput @doc(description: "Identifies which question attributes to search for and return."),
@@ -38,11 +42,11 @@ type Query {
 
 type Mutation {
 
-    registerSeller(input: SellerMutationInput!): RegisterSellerOuput @resolver(class: "\\Lof\\SellerGraphQl\\Model\\Resolver\\CreateSeller") @doc(description: "Register a new Seller Account, create new seller account")
+    registerSeller(input: SellerMutationInput!): MarketplaceOuput @resolver(class: "\\Lof\\SellerGraphQl\\Model\\Resolver\\CreateSeller") @doc(description: "Register a new Seller Account, create new seller account")
 
     becomeSeller (
         input: SellerInput @doc(description: "Query by BecomeSellerMutationInput.")
-    ) : RegisterSellerOuput @resolver( class: "Lof\\SellerGraphQl\\Model\\Resolver\\BecomeSeller") @doc(description: "Query by Mutation Become Seller.")
+    ) : MarketplaceOuput @resolver( class: "Lof\\SellerGraphQl\\Model\\Resolver\\BecomeSeller") @doc(description: "Query by Mutation Become Seller.")
 
     sellerUpdateProfile (
         input: SellerProfileMutationInput @doc(description: "Query by SellerProfileMutationInput.")
@@ -63,18 +67,15 @@ type Seller {
     shipping_policy: String @doc(description: "Shipping Policy")
     address: String @doc(description: "Address")
     country: String @doc(description: "Country")
+    country_id: CountryCodeEnum @doc(description: "Deprecated: use `country_code` instead.")
     image: String @doc(description: "Image")
     thumbnail: String @doc(description: "Thumbnail")
     city: String @doc(description: "City")
     region: String @doc(description: "Region")
     group: String @doc(description: "Group")
-    group_id: Int @doc(description: "Group")
     url: String @doc(description: "Shop Url")
-    customer_id: Int @doc(description: "Customer Id")
-    email: String @doc(description: "Email")
     name: String @doc(description: "Name")
     sale: String @doc(description: "Sale")
-    commission_id: String @doc(description: "Commission Id")
     page_layout: String @doc(description: "Page Layout")
     status: Int @doc(description: "Status")
     position: Int @doc(description: "Position")
@@ -166,7 +167,6 @@ input SellerGroupFilterInput {
     or: SellerGroupFilterInput @doc(description: "The keyword required to perform a logical OR comparison")
 }
 
-
 type SellerGroup {
     group_id: Int @doc(description: "Group Id")
     name: String @doc(description: "name")
@@ -186,36 +186,46 @@ type SellerGroups {
     sort_fields: SortFields @doc(description: "An object that includes the default sort field and all available sort fields.") @resolver(class: "Lof\\SellerGraphQl\\Model\\Resolver\\Sellers\\SortFields")
 }
 
-type RegisterSellerOuput {
-    code: String
-    message: String
+type MarketplaceOuput {
+    code: String @doc(description: "The response code")
+    message: String @doc(description: "The response message")
 }
 
 input SellerMutationInput {
-    seller: SellerInput!
-    customer: CustomerDataInput!
+    seller: SellerInput! @doc(description: "Seller Input data")
+    customer: CustomerDataInput! @doc(description: "Seller Input data")
     password: String!
 }
 
 input SellerInput {
-    group_id  : String
-    url_key  : String!
+    group_id  : String @doc(description: "An group_id")
+    url_key  : String! @doc(description: "An seller url key.")
 }
 
 input CustomerDataInput {
-    firstname: String!
-    lastname: String!
-    email: String!
-    address: AddressInput
+    prefix: String @doc(description: "An honorific, such as Dr., Mr., or Mrs.")
+    firstname: String! @doc(description: "The customer's first name")
+    middlename: String @doc(description: "The customer's middle name")
+    lastname: String! @doc(description: "The customer's family name")
+    suffix: String @doc(description: "A value such as Sr., Jr., or III")
+    email: String! @doc(description: "The customer's email address. Required for customer creation")
+    dob: String @doc(description: "Deprecated: Use `date_of_birth` instead")
+    date_of_birth: String @doc(description: "The customer's date of birth")
+    taxvat: String @doc(description: "The customer's Tax/VAT number (for corporate customers)")
+    gender: Int @doc(description: "The customer's gender (Male - 1, Female - 2)")
+    is_subscribed: Boolean @doc(description: "Indicates whether the customer is subscribed to the company's newsletter")
+    address: AddressInput @doc(description: "The customer's AddressInput")
 }
 
 input AddressInput {
-    region_id: String
-    country_id: String!
-    city: String!
-    street: String!
-    company: String
-    telephone: String!
-    postcode: String!
-    or: AddressInput
+    region_id: String @doc(description: "The address's region_id")
+    country_id: CountryCodeEnum! @doc(description: "Deprecated: use `country_code` instead.")
+    city: String @doc(description: "The city or town")
+    street: [String] @doc(description: "An array of strings that define the street number and name")
+    company: String @doc(description: "The customer's company")
+    telephone: String @doc(description: "The telephone number")
+    postcode: String @doc(description: "The customer's ZIP or postal code")
+    fax: String @doc(description: "The fax number")
+    vat_id: String @doc(description: "The customer's Tax/VAT number (for corporate customers)")
+    custom_attributes: [CustomerAddressAttributeInput] @doc(description: "Deprecated: Custom attributes should not be put into container.")
 }
